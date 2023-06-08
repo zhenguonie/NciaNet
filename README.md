@@ -18,6 +18,6 @@ Alternatively, we also provided a [One Drive link](https://1drv.ms/f/s!Ap_z1OHP_
 You can also use the processed data from [One Drive link](https://1drv.ms/u/s!Ap_z1OHP_xEagUfpFIT1g51lMzcE?e=TbK2co). Before training the model, please put the downloaded files into the directory (./data/).
 
 ### Biochemical information
-Hbond.zip deposits the data about the calculated angles and lengths of hydrogen bonds.Before training the model, please manually uncompress the folder.
+Hbond.zip deposits the data about the calculated angles and lengths of hydrogen bonds.Before training the model, please manually uncompress this folder.
 ### How to run
 To train the model, you can run train.py
