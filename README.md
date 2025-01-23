@@ -1,5 +1,5 @@
 ## NciaNet-Paddle
-Prototype and draft of source code for paper: "NciaNet: A Non-covalent interaction-aware Graph Neural Network for the Prediction of Protein-Ligand Interaction in Drug Discovey".
+Source code for paper: "NciaNet: A Non-covalent interaction-aware Graph Neural Network for the Prediction of Protein-Ligand Interaction in Drug Discovey".
 To make it easier to understand, we will gradually optimize the construction and representation of the codes and add annotations in the near future
 
 ### Dependencies
