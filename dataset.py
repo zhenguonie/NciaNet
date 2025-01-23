@@ -2,10 +2,6 @@
 Dataset code for protein-ligand complexe interaction graph construction.
 """
 import os
-import sys
-import os.path
-sys.path.append(os.path.dirname(os.path.dirname(r'C:/Users/user/Desktop/utils.py')))
-import os
 import numpy as np
 import paddle
 import pgl
@@ -14,7 +10,7 @@ from pgl.utils.data import Dataset as BaseDataset
 from pgl.utils.data import Dataloader
 from scipy.spatial import distance
 from scipy.sparse import coo_matrix
-from Desktop.utils import cos_formula
+from NciaNet.utils import cos_formula
 from tqdm import tqdm
 import gc
 import random

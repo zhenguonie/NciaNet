@@ -1,7 +1,3 @@
-import os
-import sys
-import os.path
-sys.path.append(os.path.dirname(os.path.dirname(r'C:/Users/user/Desktop/utils.py')))
 import numpy as np
 import paddle
 import paddle.nn as nn
@@ -11,7 +7,7 @@ from pgl.utils.helper import generate_segment_id_from_index
 from pgl.utils import op
 import pgl.math as math
 from Desktop.utils import generate_segment_id
-import pickle
+
 
 
 class DenseLayer(nn.Layer):
@@ -27,7 +23,13 @@ class DenseLayer(nn.Layer):
         return self.activation(self.fc(input_feat))
     
     
-class gated_skip_connection(nn.Layer):    
+    
+    
+
+
+class gated_skip_connection(nn.Layer):
+    
+    
     def __init__(self, hidden_dim, dropout):
         super(gated_skip_connection, self).__init__()
         self.fc = nn.Linear(hidden_dim*2, hidden_dim, bias_attr=True)#128*128
@@ -44,6 +46,8 @@ class gated_skip_connection(nn.Layer):
          return atom_feat2
 
 class SpatialInputLayer(nn.Layer):
+    """Implementation of Spatial Relation Embedding Module.
+    """
     def __init__(self, hidden_dim, cut_dist, activation=F.relu):
         super(SpatialInputLayer, self).__init__()
         self.cut_dist = cut_dist
@@ -51,7 +55,7 @@ class SpatialInputLayer(nn.Layer):
         self.dist_input_layer = DenseLayer(hidden_dim, hidden_dim, activation, bias=True)
     
     def forward(self, dist_feat):
-        dist_feat = dist_feat.squeeze()
+        dist_feat = dist_feat.squeeze()#清0 不知道预处理哪里出了问题
         idx = paddle.nonzero(dist_feat)
         dist_feat = dist_feat[idx]
         dist = paddle.clip(dist_feat.squeeze(), 1.0, self.cut_dist-1e-6).astype('int64') - 1
@@ -60,12 +64,16 @@ class SpatialInputLayer(nn.Layer):
         return eh_emb
 
 
+
+
 class Atom2BondLayer(nn.Layer):
+    """Implementation of Node->Edge Aggregation Layer.
+    """
     def __init__(self, atom_dim, bond_dim, activation=F.relu):
         super(Atom2BondLayer, self).__init__()
         in_dim = atom_dim*2 + bond_dim
         self.fc_agg = DenseLayer(in_dim, bond_dim, activation=activation, bias=True)
-
+        
     def agg_func(self, src_feat, dst_feat, edge_feat):
         h_src = src_feat['h']
         h_dst = dst_feat['h']
@@ -80,9 +88,13 @@ class Atom2BondLayer(nn.Layer):
     
     
 class MyBond2AtomLayer(nn.Layer):
+    """Implementation of Angle-oriented Edge->Edge Aggregation Layer.
+    """
     def __init__(self, atom_dim, hidden_dim,  dropout, activation=None):
-        super(MyBond2AtomLayer, self).__init__()     
-        self.hidden_dim = hidden_dim 
+        super(MyBond2AtomLayer, self).__init__()
+        
+        self.hidden_dim = hidden_dim
+        
         self.conv_layer = DomainAttentionLayer(atom_dim, self.hidden_dim, dropout, activation=None)
         self.activation = activation
     
@@ -93,6 +105,8 @@ class MyBond2AtomLayer(nn.Layer):
         return feat_h
 
 class DomainAttentionLayer(nn.Layer):
+    """Implementation of Angle Domain-speicific Attention Layer.
+    """
     def __init__(self, atom_dim, hidden_dim, dropout, activation=F.relu):
         super(DomainAttentionLayer, self).__init__()
         self.attn_fc = nn.Linear(atom_dim*2, 4)
@@ -132,7 +146,11 @@ class DomainAttentionLayer(nn.Layer):
         return rst
 
 
+
+
 class Bond2AtomLayer(nn.Layer):
+    """Implementation of Distance-aware Edge->Node Aggregation Layer.
+    """
     def __init__(self, bond_dim, atom_dim, hidden_dim, num_heads, dropout, merge='mean', activation=F.relu):
         super(Bond2AtomLayer, self).__init__()
         self.merge = merge
@@ -198,10 +216,18 @@ class Bond2AtomLayer(nn.Layer):
             rst = self.activation(rst)
         return rst
 
-  
+
+
+    
+    
 class get_diepersed_edge_feature(nn.Layer):
+    """Implementation of Node->Edge Aggregation Layer.
+    """
+    #两点之间的边进行信息聚合
     def __init__(self):
         super(get_diepersed_edge_feature, self).__init__()
+#        self.batch_size = batch_size
+#        self.eh_emb = eh_emb
 
     def get_graph_edge_conunt(self,a2a_g , batch_size):
         batched_Graph_edge_id_list = a2a_g.graph_edge_id
@@ -223,6 +249,8 @@ class get_diepersed_edge_feature(nn.Layer):
         return feature_matrix
 
 class my_Atom2BondLayer(nn.Layer):
+    """Implementation of Angle-oriented Edge->Edge Aggregation Layer.
+    """
     def __init__(self,concated_dim , atom_dim, hidden_dim, cut_dist, dropout, merge='cat', activation=None):
         #
         super(my_Atom2BondLayer, self).__init__()
@@ -244,7 +272,8 @@ class my_Atom2BondLayer(nn.Layer):
             edge_count_dict[key] = edge_count_dict.get(key,0)+1
         return edge_count_dict
 
-
+        
+    
     def get_bond_idx(self, b2a_gl, k,edge_count_dict):
         b2a_g_edge_order_idx = b2a_gl[k].edge_feat["idx"].numpy().tolist()
         edge_order_idx_matrix = []
@@ -255,7 +284,6 @@ class my_Atom2BondLayer(nn.Layer):
             feature_idx3 = feature_idx-feature_idx2
             edge_order_idx_matrix.append(b2a_g_edge_order_idx[feature_idx3:feature_idx])
         return edge_order_idx_matrix
-
 
     def get_bond_feat(self, edge_order_idx_matrix, bond_feat, batch_size):
         bond_feats = []
@@ -269,8 +297,7 @@ class my_Atom2BondLayer(nn.Layer):
                 bond_feats.append(edge_id_feat1)
         edge_id_feat1 = paddle.concat(bond_feats, axis=0)
         return edge_id_feat1
-
-
+    
     def forward(self,a2a_g, bond_h0 , g_list, atom_h, batch_size):
         feature_matrix = self.get_diepersed_edge_feature(a2a_g , bond_h0 , batch_size)
         h_list = []
@@ -340,6 +367,8 @@ class Bond2BondLayer(nn.Layer):
     
 
 class PiPoolLayer(nn.Layer):
+    """Implementation of Pairwise Interactive Pooling Layer.
+    """
     def __init__(self, bond_dim, hidden_dim, num_angle):
         super(PiPoolLayer, self).__init__()
         self.bond_dim = bond_dim
@@ -351,6 +380,11 @@ class PiPoolLayer(nn.Layer):
         self.softmax = nn.Softmax(axis=1)
     
     def forward(self, bond_types_batch, type_count_batch, bond_feat):
+        """
+        Input example:
+            bond_types_batch: [0,0,2,0,1,2] + [0,0,2,0,1,2] + [2]
+            type_count_batch: [[3, 3, 0], [1, 1, 0], [2, 2, 1]] # [num_type, batch_size]
+        """
         bond_feat = self.fc_1(paddle.reshape(bond_feat, [-1, self.num_angle*self.bond_dim]))
         inter_mat_list =[]
         for type_i in range(self.num_type):
@@ -363,12 +397,11 @@ class PiPoolLayer(nn.Layer):
             graph_bond_id = generate_segment_id(graph_bond_index)
             graph_feat_type_i = math.segment_pool(bond_feat_type_i, graph_bond_id, pool_type='sum')
             mat_flat_type_i = self.fc_2(graph_feat_type_i).squeeze(1)
-
             my_pad = nn.Pad1D(padding=[0, len(type_count_batch[type_i])-len(mat_flat_type_i)], value=-1e9)
             mat_flat_type_i = my_pad(mat_flat_type_i)
             inter_mat_list.append(mat_flat_type_i)
 
-        inter_mat_batch = paddle.stack(inter_mat_list, axis=1) 
+        inter_mat_batch = paddle.stack(inter_mat_list, axis=1) # [batch_size, num_type]
         inter_mat_mask = paddle.ones_like(inter_mat_batch) * -1e9
         inter_mat_batch = paddle.where(type_count_batch.transpose([1, 0])>0, inter_mat_batch, inter_mat_mask)
         inter_mat_batch = self.softmax(inter_mat_batch)
@@ -376,6 +409,8 @@ class PiPoolLayer(nn.Layer):
 
 
 class OutputLayer(nn.Layer):
+    """Implementation of Prediction Layer.
+    """
     def __init__(self, atom_dim, hidden_dim_list ,dropout):
         super(OutputLayer, self).__init__()
         self.poo0 = pgl.nn.GraphPool(pool_type='mean')
@@ -408,12 +443,10 @@ class OutputLayer(nn.Layer):
             concanted = layer(concanted)
         output = self.output_layer(concanted)
         return output
-    
 
 class get_diepersed_node_feature(nn.Layer):
     def __init__(self):
         super(get_diepersed_node_feature, self).__init__()
-
 
     def get_graph_node_conunt(self,a2a_g , batch_size):
         batched_Graph_node_id_list = a2a_g.graph_node_id
@@ -436,6 +469,8 @@ class get_diepersed_node_feature(nn.Layer):
         return feature_matrix
     
 class output_layer2(nn.Layer):
+    """Implementation of Prediction Layer.
+    """
     def __init__(self, atom_dim, hidden_dim_list ,dropout):
         super(output_layer2, self).__init__()
         self.poo0 = pgl.nn.GraphPool(pool_type='mean')
@@ -458,10 +493,12 @@ class output_layer2(nn.Layer):
         for layer in self.mlp:
             graph_feat = layer(graph_feat)
         output = self.output_layer(graph_feat)
-        return output
-
-
+        return output,graph_feat
+ 
+    
 class Hbond_layer(nn.Layer):
+    """Implementation of Distance-aware Edge->Node Aggregation Layer.
+    """
     def __init__(self, hidden_dim,dropout):
         super(Hbond_layer, self).__init__()
         self.fc1 = nn.Linear(2, 2)
@@ -477,7 +514,7 @@ class Hbond_layer(nn.Layer):
         Hbonds = self.relu(Hbonds)
         return {'Hbonds': Hbonds}
 
-    def forward(self, g, atom_feat,hbond_feature,hbond_coe,hbond_coe2):      
+    def forward(self, g, atom_feat,hbond_feature,hbond_coe,hbond_coe2):
         atom_feat = self.feat_drop(atom_feat)
         hbond_feature = self.feat_drop(hbond_feature)
         msg = g.send(self.attn_send_func,
@@ -489,11 +526,13 @@ class Hbond_layer(nn.Layer):
 
 
 class hyb_layer(nn.Layer):
+    """Implementation of Distance-aware Edge->Node Aggregation Layer.
+    """
     def __init__(self, hidden_dim,dropout):
         super(hyb_layer, self).__init__()
         self.fc1 = nn.Linear(1, 1)
         self.fc2 = nn.Linear(hidden_dim*2+1, 128)
-        self.relu = F.relu      
+        self.relu = F.relu
         self.feat_drop = nn.Dropout(p=dropout)
         
     def attn_send_func(self, src_feat, dst_feat, edge_feat):
@@ -515,12 +554,15 @@ class hyb_layer(nn.Layer):
         return hyb
 
 
+
 class PAI_layer(nn.Layer):
+    """Implementation of Distance-aware Edge->Node Aggregation Layer.
+    """
     def __init__(self, hidden_dim,dropout):
         super(PAI_layer, self).__init__()
         self.fc1 = nn.Linear(1, 1)
         self.fc2 = nn.Linear(hidden_dim*2+1, 128)
-        self.relu = F.relu    
+        self.relu = F.relu
         self.feat_drop = nn.Dropout(p=dropout)
         
     def attn_send_func(self, src_feat, dst_feat, edge_feat):
@@ -542,6 +584,8 @@ class PAI_layer(nn.Layer):
         return PAI
     
 class van_layer(nn.Layer):
+    """Implementation of Distance-aware Edge->Node Aggregation Layer.
+    """
     def __init__(self, hidden_dim,dropout):
         super(van_layer, self).__init__()
         self.fc1 = nn.Linear(1, 1)

@@ -1,6 +1,5 @@
 ## NciaNet-Paddle
 Source code for paper: "NciaNet: A Non-covalent interaction-aware Graph Neural Network for the Prediction of Protein-Ligand Interaction in Drug Discovey".
-To make it easier to understand, we will gradually optimize the construction and representation of the codes and add annotations in the near future
 
 ### Dependencies
 - python >= 3.8
@@ -18,6 +17,21 @@ Alternatively, we also provided a [One Drive link](https://1drv.ms/f/s!Ap_z1OHP_
 You can also use the processed data from [One Drive link](https://1drv.ms/u/s!Ap_z1OHP_xEagUfpFIT1g51lMzcE?e=TbK2co). Before training the model, please put the downloaded files into the directory (./data/).
 
 ### Biochemical information
-Hbond.zip deposits the data about the calculated angles and lengths of hydrogen bonds.Before training the model, please manually uncompress this folder.
+The cauculation of length and angle of hydrogen bond provided by [here](https://github.com/psa-lab/Hbind).
+
+Hbond.zip deposits the data about the calculated angles and lengths of hydrogen bonds.Before training the model, please manually uncompress this folder.Then copy these to the .Hbond/refined-set2 folder
+
 ### How to run
-To train the model, you can run train.py
+To train the model, please run train.py file
+
+To Test the model, please run test.py
+
+### How to tune key hyper-parameter
+cutoff 1 in 533 of process_pdbbind.py, default=9
+
+cutoff 2 in 408 of process_pdbbind.py, default=5
+
+Heads of multi-attention in 112 of layers.py, default=4
+
+### Result
+the result automatically saved in the output file
