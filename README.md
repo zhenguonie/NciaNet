@@ -37,5 +37,3 @@ cutoff 1 in 533 of ./process_pdbbind.py, default=9
 cutoff 2 in 408 of ./process_pdbbind.py, default=5
 
 Heads of multi-attention in 112 of ./layers.py, default=4
-
-
