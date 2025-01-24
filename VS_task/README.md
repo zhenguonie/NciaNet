@@ -17,34 +17,8 @@ The cauculation of length and angle of hydrogen bond provided by [here](https://
 Length and angle of hyrogen bond put in ./Hbond/LIT-PCBA/ according to index,as same as binding affinity task.
 
 ### Data Preparation 
-Fitstly, put the individual sample file named by user-defined index, including .PDB and .mol2 format, correspondingly put into the sub-folders of ./original_data folder. Original_data folder have 4 type sub-folders (training activces/training inactives/test actives/test inactives),as follow:
+Fitstly, put the individual sample file named by user-defined index, including .PDB and .mol2 format, correspondingly put into the sub-folders of ./original_data folder. Original_data folder have 4 type sub-folders (training activces/training inactives/test actives/test inactives).
 
-./original_data
-│
-├── training actives
-│   ├── protein 1 (actives 1)
-│   ├── protein 1 (actives 2)
-│   ├── ... ...
-│   └── protein 10 and (actives N)
-│
-├── training inactives
-│   ├── protein 1 (inactives 1)
-│   ├── protein 1 (inactives 2)
-│   ├── ... ...
-│   └── protein 10 (inactives N)
-│
-├── test actives
-│   ├── protein 11 (actives 1)
-│   ├── protein 11 (actives 2)
-│   ├── ... ...
-│   └── protein n (actives N)
-│
-├── test inactives
-│   ├── protein 11 (inactives 1)
-│   ├── protein 11 (inactives 2)
-│   ├── ... ...
-│   └── protein n (inactives N)
-│
 Then, run ./create_dataset_label.py files to creat the dictionary of indexs of samples and corresponding labels (actives as 1, inactives 0), outputing an VS_task_label_dict.pkl in ./data folder. In the meantime, original data files in ./original_data is re-arranged to form training set folder and test folder in ./data folder. 
 
 Subsequently, run the ./preprocess_LIT_PCBA.py file to finish the data prepocessing, which saved into the ./data folder.
