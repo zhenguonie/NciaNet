@@ -3,7 +3,7 @@ Source code of virtual-screening (VS) task in the file of vs_task for paper: "Nc
 
 ### Dependencies
 - python >= 3.8
-- paddlepaddle >= 2.1.0
+- paddlepaddle >= 2.1.0 
 - pgl >= 2.1.4
 - openbabel == 3.1.1 (optional, only for preprocessing)
 
