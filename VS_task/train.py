@@ -8,7 +8,7 @@ import paddle.nn.functional as F
 from pgl.utils.data import Dataloader
 from dataset import ComplexDataset, collate_fn
 from model import NciaNet
-from NciaNet.utils import rmse, mae, sd, pearson
+from NciaNet.VS_task.utils import calculate_ef_1percent
 from tqdm import tqdm
 
 paddle.seed(123)
@@ -29,7 +29,8 @@ def evaluate(model, loader):
         y_list += y.tolist()
     y_hat = np.array(y_hat_list).reshape(-1,)
     y = np.array(y_list).reshape(-1,)
-    return rmse(y, y_hat), mae(y, y_hat), sd(y, y_hat), pearson(y, y_hat)
+    np.random.seed(42)  
+    return calculate_ef_1percent(y, y_hat)
 
 
 def train(args, model, trn_loader, tst_loader, val_loader):
@@ -41,7 +42,7 @@ def train(args, model, trn_loader, tst_loader, val_loader):
     rmse_val_best, res_tst_best = 1e9, ''
     running_log = ''
     print('Start training model...')
-    standard = 1000000
+    standard = 0
     for epoch in range(1, args.epochs + 1):
         sum_loss = 0
         model.train()
@@ -56,27 +57,25 @@ def train(args, model, trn_loader, tst_loader, val_loader):
             scheduler.step()
             sum_loss += loss
         end_trn = time.time()
-        rmse_val, mae_val, sd_val, r_val = evaluate(model, val_loader)
-        rmse_tst, mae_tst, sd_tst, r_tst = evaluate(model, tst_loader)
+        calculate_ef_1percent = evaluate(model, tst_loader)
         end_val = time.time()
         log = '-----------------------------------------------------------------------\n'
 
         log += 'Epoch: %d, loss: %.4f,  time: %.4f, val_time: %.4f.\n' % (
                 epoch, sum_loss/(epoch_step*args.batch_size),  end_trn-start, end_val-end_trn)
-        log += 'Val - RMSE: %.6f, MAE: %.6f, SD: %.6f, R: %.6f.\n' % (rmse_val, mae_val, sd_val, r_val)
-        log += 'Test - RMSE: %.6f, MAE: %.6f, SD: %.6f, R: %.6f.\n' % (rmse_tst, mae_tst, sd_tst, r_tst)
+        log += 'Test - EF at 1: %.6f.\n' % (calculate_ef_1percent)
         print(log)
         all_epoch={'model': model.state_dict()}
         all_epoch_path=path = os.path.join(args.model_dir, 'all')
         paddle.save(all_epoch, all_epoch_path)
 
-        if rmse_tst < standard:
-            res_tst_best = 'Best - RMSE: %.6f, MAE: %.6f, SD: %.6f, R: %.6f.\n' % (rmse_tst, mae_tst, sd_tst, r_tst)
-            standard = rmse_tst
+        if calculate_ef_1percent > 0:
+            res_tst_best = 'Best -  EF at 1: %.6f.\n' % (calculate_ef_1percent)
+            standard = calculate_ef_1percent
             if args.save_model:
                 obj = {'model': model.state_dict()}
-                path = os.path.join(args.model_dir, 'atom_h4')
-                optim_path = os.path.join(args.model_dir, 'saved_optim')
+                path = os.path.join(args.model_dir, 'Result')
+                optim_path = os.path.join(args.model_dir, 'saved_model')
                 paddle.save(obj, path)
                 paddle.save(optim.state_dict(), optim_path)
 
@@ -94,21 +93,21 @@ def train(args, model, trn_loader, tst_loader, val_loader):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, default='./data/')
-    parser.add_argument('--dataset', type=str, default='pdbbind2016')
-    parser.add_argument('--model_dir', type=str, default='./output/')     
+    parser.add_argument('--dataset', type=str, default='LIT-PCBA')
+    parser.add_argument('--model_dir', type=str, default='./output/')   
     parser.add_argument('--cuda', type=str, default='0')
     parser.add_argument('--seed', type=int, default=123)
     parser.add_argument("--save_model", action="store_true", default=True)
 
     parser.add_argument("--lambda_", type=float, default=1.75)
     parser.add_argument("--feat_drop", type=float, default=0.5)
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--weight_decay", type=float, default=0.)
     parser.add_argument("--lr_dec_rate", type=float, default=0.5)
     parser.add_argument("--dec_step", type=int, default=8000)
     parser.add_argument('--stop_epoch', type=int, default=100)
-    parser.add_argument('--epochs', type=int, default=400)
+    parser.add_argument('--epochs', type=int, default=2)
 
     parser.add_argument("--num_convs", type=int, default=1)
     parser.add_argument("--hidden_dim", type=int, default=128)

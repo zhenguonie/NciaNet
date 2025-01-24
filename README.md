@@ -1,5 +1,6 @@
 ## NciaNet-Paddle
-Source code for paper: "NciaNet: A Non-covalent interaction-aware Graph Neural Network for the Prediction of Protein-Ligand Interaction in Drug Discovey".
+Source code of binding affinity (BA) task for paper: "NciaNet: A Non-covalent interaction-aware Graph Neural Network for the Prediction of Protein-Ligand Interaction in Drug Discovey".
+Source code of virtual-screening (VS) task in the folder of ./VS_task
 
 ### Dependencies
 - python >= 3.8
@@ -7,7 +8,7 @@ Source code for paper: "NciaNet: A Non-covalent interaction-aware Graph Neural N
 - pgl >= 2.1.4
 - openbabel == 3.1.1 (optional, only for preprocessing)
 
-### Datasets
+### Datasets and Preparation
 The PDBbind dataset can be downloaded [here](http://pdbbind-cn.org).
 
 You may need to use the [UCSF Chimera tool](https://www.cgl.ucsf.edu/chimera/) to convert the PDB-format files into MOL2-format files for feature extraction at first.
@@ -22,16 +23,18 @@ The cauculation of length and angle of hydrogen bond provided by [here](https://
 Hbond.zip deposits the data about the calculated angles and lengths of hydrogen bonds.Before training the model, please manually uncompress this folder.Then copy these to the .Hbond/refined-set2 folder
 
 ### How to run
-To train the model, please run train.py file
+To train the model, please run ./train.py file, then representing the result of four metric (RMSE/R/MAE/SD).
 
-To Test the model, please run test.py
-
-### How to tune key hyper-parameter
-cutoff 1 in 533 of process_pdbbind.py, default=9
-
-cutoff 2 in 408 of process_pdbbind.py, default=5
-
-Heads of multi-attention in 112 of layers.py, default=4
+To Test the model, please run ./test.py
 
 ### Result
-the result automatically saved in the output file
+The result automatically saved in the ./output floder as result.txt.
+
+### Configuration of Key Hyper-parameter 
+cutoff 1 in 533 of ./process_pdbbind.py, default=9
+
+cutoff 2 in 408 of ./process_pdbbind.py, default=5
+
+Heads of multi-attention in 112 of ./layers.py, default=4
+
+
