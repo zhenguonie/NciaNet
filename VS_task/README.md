@@ -16,7 +16,7 @@ The cauculation of length and angle of hydrogen bond provided by [here](https://
 
 Length and angle of hyrogen bond put in ./Hbond/LIT-PCBA/ according to index,as same as binding affinity task.
 
-### Data Preparation 
+### Data Preparation
 Fitstly, put the individual sample file named by user-defined index, including .PDB and .mol2 format, correspondingly put into the sub-folders of ./original_data folder. Original_data folder have 4 type sub-folders (training activces/training inactives/test actives/test inactives).
 
 Then, run ./create_dataset_label.py files to creat the dictionary of indexs of samples and corresponding labels (actives as 1, inactives 0), outputing an VS_task_label_dict.pkl in ./data folder. In the meantime, original data files in ./original_data is re-arranged to form training set folder and test folder in ./data folder. 
