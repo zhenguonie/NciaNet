@@ -1,7 +1,7 @@
 ## NciaNet-Paddle
 Here is the Source code of binding affinity (BA) task for paper: "NciaNet: A Non-covalent interaction-aware Graph Neural Network for the Prediction of Protein-Ligand Interaction in Drug Discovey".
 
-Additionally, regarding the source code of virtual-screening (VS) task is put in the folder of ./VS_task.
+Additionally, regarding the source code of virtual-screening (VS) task is put in the folder of ./VS_task
 
 ### Dependencies
 - python >= 3.8
