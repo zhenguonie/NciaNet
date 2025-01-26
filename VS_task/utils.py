@@ -54,7 +54,7 @@ def calculate_ef_1percent(y_true_list_all, y_hat_list_all):
     predicted_and_real_active = sum(1 for pred, real in top_1_percent_samples if pred >= 0.5 and real == 1)
     total_active_count = np.sum(y_true_all == 1)  
     ef_1_percent = predicted_and_real_active / total_active_count
-    return ef_1_percent
+    return ef_1_percent 
 
 
 def rmse(y,f):
