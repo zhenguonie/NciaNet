@@ -42,18 +42,18 @@ def setxor(a, b):
 
 def calculate_ef_1percent(y_true_list_all, y_hat_list_all):
     if len(y_hat_list_all) == 0 or len(y_true_list_all) == 0:
-        raise ValueError("y_hat_list_all or y_true_list_all empty，cannot calculate EF 1%")
+        raise ValueError("y_hat_list_all or y_true_list_all empty, cannot calculate EF 1%")
     y_hat_all = np.array(y_hat_list_all)
     y_true_all = np.array(y_true_list_all)
-    sorted_indices = np.argsort(y_hat_all)[::-1]
-    sorted_y_hat = y_hat_all[sorted_indices]
-    sorted_y_true = y_true_all[sorted_indices]
-    top_1_percent_count = max(1, int(len(sorted_y_hat) * 0.01)) 
-    top_1_percent_labels = sorted_y_true[:top_1_percent_count]
-    top_1_percent_preds = sorted_y_hat[:top_1_percent_count]
-    predicted_ones = top_1_percent_preds >= 0.5  
-    effective_count = np.sum(predicted_ones & (top_1_percent_labels == 1))  
-    ef_1_percent = effective_count / top_1_percent_count
+    total_samples = len(y_hat_all)
+    top_1_percent_count = max(1, int(total_samples * 0.01))
+    paired_data = list(zip(y_hat_all, y_true_all))
+    paired_data_sorted = sorted(paired_data, key=lambda x: x[0], reverse=True)
+    sorted_y_hat, sorted_y_true = zip(*paired_data_sorted)
+    top_1_percent_samples = list(zip(sorted_y_hat[:top_1_percent_count], sorted_y_true[:top_1_percent_count]))
+    predicted_and_real_active = sum(1 for pred, real in top_1_percent_samples if pred >= 0.5 and real == 1)
+    total_active_count = np.sum(y_true_all == 1)  
+    ef_1_percent = predicted_and_real_active / total_active_count
     return ef_1_percent
 
 

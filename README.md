@@ -5,7 +5,7 @@ Additionally, regarding the source code of virtual-screening (VS) task is put in
 
 ### Dependencies
 - python >= 3.8
-- paddlepaddle >= 2.1.0 
+- paddlepaddle >= 2.1.0
 - pgl >= 2.1.4
 - openbabel == 3.1.1 (optional, only for preprocessing)
 
